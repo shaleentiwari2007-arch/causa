@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+:root {
+  --background: #030014;
+  --foreground: #f0f0f5;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.45);
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-18px) translateX(8px);
+  }
+  50% {
+    transform: translateY(-8px) translateX(-6px);
+  }
+  75% {
+    transform: translateY(-22px) translateX(4px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.nebula-glow {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 38%, rgba(99, 102, 241, 0.18) 0%, transparent 68%),
+    radial-gradient(ellipse 55% 45% at 18% 58%, rgba(139, 92, 246, 0.12) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 40% at 82% 28%, rgba(59, 130, 246, 0.1) 0%, transparent 52%);
+}
+
+.nebula-orb {
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.45) 0%,
+    rgba(139, 92, 246, 0.2) 35%,
+    transparent 70%
+  );
+}
+
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.search-glow {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 48px rgba(99, 102, 241, 0.14),
+    0 0 96px rgba(99, 102, 241, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.search-glow-active,
+.search-glow:focus-within {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.5),
+    0 0 64px rgba(99, 102, 241, 0.3),
+    0 0 140px rgba(99, 102, 241, 0.14),
+    0 0 200px rgba(139, 92, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn-glow {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 45%, #6366f1 100%);
+  background-size: 200% auto;
+  box-shadow:
+    0 0 36px rgba(99, 102, 241, 0.4),
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: background-position 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-glow:hover {
+  background-position: right center;
+}
+
+.btn-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float linear infinite;
+}
+
+.particle-glow {
+  box-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+}
+
+.title-gradient {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f0f0f8 35%,
+    rgba(190, 198, 235, 0.9) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.knowledge-graph-line {
+  stroke: rgba(99, 102, 241, 0.18);
+  stroke-width: 1;
+}
+
+.status-badge {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.status-dot {
+  animation: status-pulse 2.5s ease-in-out infinite;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
