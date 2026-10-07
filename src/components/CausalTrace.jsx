@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
 import CausalNode from './CausalNode'
 import CausalConnections from './CausalConnections'
 
@@ -9,11 +10,24 @@ export default function CausalTrace({ result }) {
     return result?.chain ?? []
   }, [result])
 
+  useEffect(() => {
+    setActiveIndex(0)
+  }, [result])
+
   if (!result || chain.length === 0) {
     return null
   }
 
   const activeItem = chain[activeIndex]
+  const activeNode = result.nodes?.[activeItem]
+
+  const previousItem =
+    activeIndex > 0 ? chain[activeIndex - 1] : null
+
+  const nextItem =
+    activeIndex < chain.length - 1
+      ? chain[activeIndex + 1]
+      : null
 
   const goBack = () => {
     setActiveIndex((current) => Math.max(0, current - 1))
@@ -47,7 +61,22 @@ export default function CausalTrace({ result }) {
           activeIndex={activeIndex}
         />
 
-        <div className="causal-node-row">
+        <div
+          className="causal-energy"
+          style={{
+            '--energy-progress':
+              chain.length > 1
+                ? `${(activeIndex / (chain.length - 1)) * 100}%`
+                : '0%',
+          }}
+        />
+
+        <div
+          className="causal-node-row"
+          style={{
+            '--causal-node-count': chain.length,
+          }}
+        >
           {chain.map((item, index) => (
             <CausalNode
               key={`${item}-${index}`}
@@ -66,14 +95,27 @@ export default function CausalTrace({ result }) {
         </div>
 
         <div className="causal-focus-content">
-          <span>ACTIVE CAUSAL NODE</span>
+          <div className="causal-signal">
+            <span className="causal-signal-dot" />
+            <span>CAUSAL SIGNAL ACTIVE</span>
+          </div>
+
+          <span className="causal-focus-label">
+            ACTIVE CAUSAL NODE
+          </span>
 
           <strong>{activeItem}</strong>
 
-          <p>
-            Explore this point in the causal chain and trace
-            how it connects to what came before and what came after.
-          </p>
+          {activeNode && (
+            <>
+              <div className="causal-node-meta">
+                <span>{activeNode.era}</span>
+                <span>{activeNode.type}</span>
+              </div>
+
+              <p>{activeNode.description}</p>
+            </>
+          )}
         </div>
 
         <div className="causal-navigation">
@@ -92,6 +134,38 @@ export default function CausalTrace({ result }) {
           >
             FORWARD →
           </button>
+        </div>
+      </div>
+
+      <div className="causal-links">
+        <div className="causal-link-card">
+          <span>WHAT CAME BEFORE</span>
+
+          <strong>
+            {previousItem || 'ORIGIN POINT'}
+          </strong>
+        </div>
+
+        <div className="causal-link-arrow">
+          →
+        </div>
+
+        <div className="causal-link-card causal-link-card-active">
+          <span>CURRENT NODE</span>
+
+          <strong>{activeItem}</strong>
+        </div>
+
+        <div className="causal-link-arrow">
+          →
+        </div>
+
+        <div className="causal-link-card">
+          <span>WHAT CAME NEXT</span>
+
+          <strong>
+            {nextItem || 'END OF TRACE'}
+          </strong>
         </div>
       </div>
     </section>

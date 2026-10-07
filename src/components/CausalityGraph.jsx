@@ -108,6 +108,294 @@ const relationshipData = {
     causes: ['Internet', 'Microprocessor'],
     effects: [],
   },
+
+  'Static Electricity': {
+    type: 'ORIGIN',
+    description:
+      'Early observations of static charge gave the first clues that electricity was a distinct, controllable force.',
+    causes: [],
+    effects: ['Electric Current'],
+  },
+
+  'Electric Current': {
+    type: 'ENABLER',
+    description:
+      'Understanding the controlled flow of charge made practical electrical devices possible.',
+    causes: ['Static Electricity'],
+    effects: ['Electromagnetism'],
+  },
+
+  Electromagnetism: {
+    type: 'FOUNDATION',
+    description:
+      'Discovering the link between electricity and magnetism unlocked motors and long-distance signaling.',
+    causes: ['Electric Current'],
+    effects: ['Telegraph'],
+  },
+
+  'Electric Power': {
+    type: 'INFRASTRUCTURE',
+    description:
+      'Large-scale generation and distribution of electricity brought power to homes and industry alike.',
+    causes: ['Telegraph'],
+    effects: ['Electronics'],
+  },
+
+  Electronics: {
+    type: 'FOUNDATION',
+    description:
+      'Circuits built to precisely control electron flow gave rise to radio, television, and computing.',
+    causes: ['Electric Power'],
+    effects: ['Computers'],
+  },
+
+  Computers: {
+    type: 'TRANSFORMATION',
+    description:
+      'Programmable electronic machines could process information at a scale no prior technology could match.',
+    causes: ['Electronics'],
+    effects: ['Internet'],
+  },
+
+  Paper: {
+    type: 'ORIGIN',
+    description:
+      'An inexpensive, portable writing material made mass reproduction of text feasible for the first time.',
+    causes: [],
+    effects: ['Movable Type'],
+  },
+
+  'Movable Type': {
+    type: 'ENABLER',
+    description:
+      'Reusable individual characters let printers assemble and reset pages far faster than hand-copying.',
+    causes: ['Paper'],
+    effects: ['Printing Press'],
+  },
+
+  'Printing Press': {
+    type: 'BREAKTHROUGH',
+    description:
+      'Mechanized reproduction of text dramatically increased the speed and scale at which ideas could spread.',
+    causes: ['Paper', 'Movable Type'],
+    effects: ['Mass Literacy', 'Scientific Revolution'],
+  },
+
+  'Mass Literacy': {
+    type: 'TRANSFORMATION',
+    description:
+      'A widespread ability to read turned printed material into a tool for education and civic life.',
+    causes: ['Printing Press'],
+    effects: ['Modern Knowledge'],
+  },
+
+  'Scientific Revolution': {
+    type: 'BREAKTHROUGH',
+    description:
+      'A shift toward observation and experimentation replaced tradition as the basis of knowledge.',
+    causes: ['Printing Press', 'Renaissance'],
+    effects: ['Enlightenment', 'Scientific Method'],
+  },
+
+  Enlightenment: {
+    type: 'BREAKTHROUGH',
+    description:
+      'A philosophical movement that placed reason, individual rights, and skepticism of authority at the center of human thought.',
+    causes: ['Scientific Revolution', 'Rationalism'],
+    effects: ['Natural Rights', 'Modern Human Rights'],
+  },
+
+  'Modern Knowledge': {
+    type: 'CURRENT',
+    description:
+      "Today's vast, widely accessible base of recorded human understanding.",
+    causes: ['Mass Literacy'],
+    effects: [],
+  },
+
+  Renaissance: {
+    type: 'ORIGIN',
+    description:
+      'A revival of classical learning and inquiry set the stage for scientific and philosophical thinking.',
+    causes: [],
+    effects: ['Scientific Revolution'],
+  },
+
+  'Scientific Method': {
+    type: 'FOUNDATION',
+    description:
+      'A systematic approach of observation, hypothesis, and testing became the standard for reliable knowledge.',
+    causes: ['Scientific Revolution', 'Rationalism'],
+    effects: ['Modern Science'],
+  },
+
+  'Modern Science': {
+    type: 'FOUNDATION',
+    description:
+      'Organized scientific disciplines built on testable, repeatable methods.',
+    causes: ['Scientific Method'],
+    effects: ['Engineering'],
+  },
+
+  Engineering: {
+    type: 'TRANSFORMATION',
+    description:
+      'Applying scientific principles to design and build practical systems and structures.',
+    causes: ['Modern Science'],
+    effects: ['Modern Technology'],
+  },
+
+  'Modern Technology': {
+    type: 'CURRENT',
+    description:
+      "Today's technological tools and infrastructure, built on centuries of engineering practice.",
+    causes: ['Engineering'],
+    effects: [],
+  },
+
+  Rationalism: {
+    type: 'ORIGIN',
+    description:
+      'The view that reason, not authority or tradition, is the primary source of reliable knowledge.',
+    causes: [],
+    effects: ['Scientific Method', 'Enlightenment'],
+  },
+
+  'Natural Rights': {
+    type: 'FOUNDATION',
+    description:
+      'The idea that individuals possess inherent rights independent of any government.',
+    causes: ['Enlightenment'],
+    effects: ['Social Contract Theory'],
+  },
+
+  'Social Contract Theory': {
+    type: 'FOUNDATION',
+    description:
+      'The idea that legitimate government derives from an agreement among the governed.',
+    causes: ['Natural Rights'],
+    effects: ['Democracy'],
+  },
+
+  Democracy: {
+    type: 'TRANSFORMATION',
+    description:
+      'Governance by the consent and participation of the people.',
+    causes: ['Social Contract Theory'],
+    effects: ['Modern Human Rights'],
+  },
+
+  'Modern Human Rights': {
+    type: 'CURRENT',
+    description:
+      "Today's legal and moral frameworks protecting individual freedoms worldwide.",
+    causes: ['Democracy', 'Enlightenment'],
+    effects: [],
+  },
+
+  'Ancient Geometry': {
+    type: 'ORIGIN',
+    description:
+      'Early systematic study of shapes, space, and measurement.',
+    causes: [],
+    effects: ['Algebra'],
+  },
+
+  Algebra: {
+    type: 'ENABLER',
+    description:
+      'Symbolic methods for solving equations and expressing general mathematical relationships.',
+    causes: ['Ancient Geometry'],
+    effects: ['Analytic Geometry'],
+  },
+
+  'Analytic Geometry': {
+    type: 'ENABLER',
+    description:
+      'Representing geometric shapes using algebraic equations and coordinate systems.',
+    causes: ['Algebra'],
+    effects: ['Calculus'],
+  },
+
+  Calculus: {
+    type: 'BREAKTHROUGH',
+    description:
+      'Calculus gave mathematics a language for describing continuous change, unlocking centuries of scientific and engineering progress.',
+    causes: ['Analytic Geometry'],
+    effects: ['Newtonian Physics'],
+  },
+
+  'Newtonian Physics': {
+    type: 'BREAKTHROUGH',
+    description:
+      'Laws of motion and gravitation formalized using the tools of calculus.',
+    causes: ['Calculus'],
+    effects: ['Modern Engineering'],
+  },
+
+  'Modern Engineering': {
+    type: 'TRANSFORMATION',
+    description:
+      'Applying precise mathematical models to design machines, structures, and systems.',
+    causes: ['Newtonian Physics'],
+    effects: ['Computer Science'],
+  },
+
+  'Computer Science': {
+    type: 'CURRENT',
+    description:
+      'The study of computation, algorithms, and information processing.',
+    causes: ['Modern Engineering'],
+    effects: [],
+  },
+
+  Photography: {
+    type: 'ORIGIN',
+    description:
+      'The ability to capture a scene exactly as it appeared challenged painters to find a new purpose.',
+    causes: [],
+    effects: ['Naturalism'],
+  },
+
+  Naturalism: {
+    type: 'ENABLER',
+    description:
+      'An art movement emphasizing accurate, unidealized depiction of everyday life.',
+    causes: ['Photography'],
+    effects: ['Impressionism'],
+  },
+
+  Impressionism: {
+    type: 'BREAKTHROUGH',
+    description:
+      'Impressionism broke from rigid academic painting, capturing light and fleeting moments instead of rigid detail.',
+    causes: ['Photography', 'Naturalism'],
+    effects: ['Post-Impressionism'],
+  },
+
+  'Post-Impressionism': {
+    type: 'TRANSFORMATION',
+    description:
+      'Artists pushed beyond naturalistic color and light toward personal expression and structure.',
+    causes: ['Impressionism'],
+    effects: ['Modern Art'],
+  },
+
+  'Modern Art': {
+    type: 'TRANSFORMATION',
+    description:
+      'A broad rejection of traditional technique in favor of experimentation and new forms.',
+    causes: ['Post-Impressionism'],
+    effects: ['Abstract Art'],
+  },
+
+  'Abstract Art': {
+    type: 'CURRENT',
+    description:
+      'Art that represents ideas and emotion without depicting recognizable subjects.',
+    causes: ['Modern Art'],
+    effects: [],
+  },
 }
 
 const fallbackNode = (name, chain, index) => ({

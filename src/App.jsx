@@ -1,6 +1,10 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { useState } from 'react'
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
+import { ACESFilmicToneMapping } from 'three'
+import { useEffect, useState } from 'react'
+import jsPDF from 'jspdf'
+import QRCode from 'react-qr-code'
 
 import Starfield from './components/Starfield'
 import CausalityGraph from './components/CausalityGraph'
@@ -26,7 +30,6 @@ const NODES = [
 function UniverseScene() {
   return (
     <>
-      <color attach="background" args={['#02030a']} />
       <fog attach="fog" args={['#02030a', 10, 30]} />
 
       <ambientLight intensity={0.25} />
@@ -67,8 +70,88 @@ function UniverseScene() {
         minPolarAngle={Math.PI / 2.5}
         maxPolarAngle={Math.PI / 1.7}
       />
+
+      <EffectComposer>
+        <Bloom
+          intensity={0.6}
+          luminanceThreshold={0.45}
+          luminanceSmoothing={0.25}
+          mipmapBlur
+          radius={0.35}
+        />
+        <Vignette eskil={false} offset={0.15} darkness={0.9} />
+      </EffectComposer>
     </>
   )
+}
+
+function downloadChainPdf(result) {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+  const margin = 48
+  let y = margin
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(90, 110, 200)
+  doc.text('CAUSA — CAUSAL TRACE', margin, y)
+  y += 28
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(24)
+  doc.setTextColor(20, 20, 30)
+  doc.text(result.title, margin, y)
+  y += 18
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(120, 120, 130)
+  doc.text(result.year, margin, y)
+  y += 26
+
+  doc.setFontSize(11)
+  doc.setTextColor(60, 60, 70)
+  const descLines = doc.splitTextToSize(result.description, 500)
+  doc.text(descLines, margin, y)
+  y += descLines.length * 14 + 20
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(20, 20, 30)
+  doc.text('THE CHAIN', margin, y)
+  y += 18
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
+  result.chain.forEach((step, i) => {
+    doc.text(`${i + 1}. ${step}`, margin, y)
+    y += 16
+  })
+  y += 12
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.text('WHAT LED TO IT', margin, y)
+  y += 16
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
+  result.causes.forEach((cause) => {
+    doc.text(`•  ${cause}`, margin, y)
+    y += 15
+  })
+  y += 10
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.text('WHAT CAME AFTER', margin, y)
+  y += 16
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
+  result.effects.forEach((effect) => {
+    doc.text(`•  ${effect}`, margin, y)
+    y += 15
+  })
+
+  doc.save(`${result.title.replace(/\s+/g, '-').toLowerCase()}-causa.pdf`)
 }
 
 export default function App() {
@@ -98,6 +181,21 @@ export default function App() {
     setResult(null)
   }
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const chainParam = params.get('chain')
+
+    if (chainParam) {
+      setExploring(true)
+      runSearch(decodeURIComponent(chainParam))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const shareUrl = result
+    ? `${window.location.origin}${window.location.pathname}?chain=${encodeURIComponent(result.title)}`
+    : ''
+
   return (
     <main className={`causa ${exploring ? 'is-exploring' : ''}`}>
       {entering && (
@@ -117,7 +215,12 @@ export default function App() {
           <Canvas
             camera={{ position: [0, 0, 10], fov: 45 }}
             dpr={[1, 1.8]}
-            gl={{ antialias: true, powerPreference: 'high-performance' }}
+            gl={{
+              antialias: true,
+              alpha: true,
+              powerPreference: 'high-performance',
+              toneMapping: ACESFilmicToneMapping,
+            }}
           >
             <UniverseScene />
           </Canvas>
@@ -129,18 +232,38 @@ export default function App() {
                 <span>CAUSA</span>
               </div>
 
-              <div className="system-status">
-                <span className="status-dot" />
-                SYSTEM ONLINE
-              </div>
+              <nav className="topnav">
+                <a href="#" className="active" onClick={(e) => e.preventDefault()}>
+                  EXPLORE
+                </a>
+                <a href="#" onClick={(e) => e.preventDefault()}>
+                  KNOWLEDGE GRAPH
+                </a>
+                <a href="#" onClick={(e) => e.preventDefault()}>
+                  ABOUT
+                </a>
+              </nav>
 
-              <div className="interface">
-                INTERFACE / <span>01</span>
+              <div className="topbar-right">
+                <div className="system-status">
+                  <span className="status-dot" />
+                  SYSTEM ONLINE
+                </div>
+
+                <button className="topbar-menu" aria-label="Menu">
+                  <span />
+                  <span />
+                  <span />
+                </button>
+
+                <div className="interface">
+                  INTERFACE / <span>01</span>
+                </div>
               </div>
             </header>
 
             <section className="hero-copy">
-              <div className="eyebrow">CAUSALITY EXPLORATION ENGINE</div>
+              <div className="eyebrow">CAUSAL KNOWLEDGE ENGINE</div>
 
               <h1>
                 TRACE
@@ -149,8 +272,8 @@ export default function App() {
               </h1>
 
               <p>
-                Explore the hidden chain of ideas, discoveries and events that
-                shaped the world around us.
+                Explore the chain of ideas, discoveries and events that shaped
+                the world around us.
               </p>
 
               <button className="enter-button" onClick={handleExplore}>
@@ -287,8 +410,17 @@ export default function App() {
               <div className="causal-overlay">
                 <div className="causal-overlay-backdrop" onClick={closeResult} />
 
-                <div className="causal-result" role="dialog" aria-modal="true" aria-label="Causal trace">
-                  <button className="causal-close" onClick={closeResult} aria-label="Close causal trace">
+                <div
+                  className="causal-result"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Causal trace"
+                >
+                  <button
+                    className="causal-close"
+                    onClick={closeResult}
+                    aria-label="Close causal trace"
+                  >
                     ×
                   </button>
 
@@ -321,6 +453,32 @@ export default function App() {
                           <li key={effect}>{effect}</li>
                         ))}
                       </ul>
+                    </div>
+                  </div>
+
+                  <div className="share-panel">
+                    <div className="share-info">
+                      <span>SHARE THIS TRACE</span>
+                      <p>
+                        Scan to open this exact causal chain on another
+                        device, or download it as a PDF right now.
+                      </p>
+                      <button
+                        type="button"
+                        className="pdf-button"
+                        onClick={() => downloadChainPdf(result)}
+                      >
+                        DOWNLOAD PDF ⬇
+                      </button>
+                    </div>
+
+                    <div className="qr-wrap">
+                      <QRCode
+                        value={shareUrl}
+                        size={92}
+                        bgColor="transparent"
+                        fgColor="#e8edff"
+                      />
                     </div>
                   </div>
 

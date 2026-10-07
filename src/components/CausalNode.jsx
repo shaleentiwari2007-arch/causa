@@ -22,7 +22,7 @@ export default function CausalNode({
         {String(index + 1).padStart(2, '0')}
       </span>
 
-      <span className="causal-node-core">
+      <span className="causal-node-track-point">
         <span className="causal-node-pulse" />
         <span className="causal-node-dot" />
       </span>
@@ -32,7 +32,7 @@ export default function CausalNode({
       </span>
 
       <span className="causal-node-state">
-        {active ? 'ACTIVE' : hovered ? 'SELECT' : 'TRACE'}
+        {active ? 'ACTIVE SIGNAL' : hovered ? 'SELECT NODE' : 'TRACE'}
       </span>
     </button>
   )
