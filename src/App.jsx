@@ -2,32 +2,37 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import { ACESFilmicToneMapping } from 'three'
-import { useEffect, useState } from 'react'
-import jsPDF from 'jspdf'
-import QRCode from 'react-qr-code'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import Starfield from './components/Starfield'
-import CausalityGraph from './components/CausalityGraph'
 import KnowledgeCore from './components/KnowledgeCore'
 import KnowledgeNode from './components/KnowledgeNode'
 import GraphConnections from './components/Connections'
 import CameraRig from './components/CameraRig'
 import Satellite from './components/Satellite'
-import CausalTrace from './components/CausalTrace'
-import { findKnowledge } from './data/knowledge'
+import Exploration from './components/Exploration'
+import { DOMAINS, getDomain } from './data/domains'
 
 import './App.css'
 
-const NODES = [
-  { name: 'SCIENCE', color: '#48a9ff', position: [-3.5, 1.8, 0] },
-  { name: 'PHILOSOPHY', color: '#b47cff', position: [3.3, 1.7, -0.3] },
-  { name: 'HISTORY', color: '#ffb45c', position: [-4, -1.5, -0.2] },
-  { name: 'TECHNOLOGY', color: '#35e0c0', position: [4, -1.4, 0.1] },
-  { name: 'MATHEMATICS', color: '#789cff', position: [-1.8, -3, -0.5] },
-  { name: 'ART', color: '#ff65bd', position: [2, -3, -0.2] },
-]
+// stable references so hover state in <App> never re-applies camera/gl props
+const CONNECTIONS = DOMAINS.map((domain) => ({
+  id: domain.key,
+  start: [0, 0, 0],
+  end: domain.position,
+  color: domain.color,
+}))
 
-function UniverseScene() {
+const CAMERA = { position: [0, 0, 10], fov: 45 }
+const DPR = [1, 1.8]
+const GL = {
+  antialias: true,
+  alpha: true,
+  powerPreference: 'high-performance',
+  toneMapping: ACESFilmicToneMapping,
+}
+
+function UniverseScene({ onSelect, onHoverChange }) {
   return (
     <>
       <fog attach="fog" args={['#02030a', 10, 30]} />
@@ -39,24 +44,19 @@ function UniverseScene() {
       <Starfield />
       <CameraRig />
 
-      <GraphConnections
-        nodes={NODES.map((node) => ({
-          id: node.name,
-          start: [0, 0, 0],
-          end: node.position,
-          color: node.color,
-        }))}
-      />
+      <GraphConnections nodes={CONNECTIONS} />
 
       <KnowledgeCore />
 
-      {NODES.map((node, index) => (
+      {DOMAINS.map((domain, index) => (
         <KnowledgeNode
-          key={node.name}
-          name={node.name}
-          color={node.color}
-          position={node.position}
+          key={domain.key}
+          name={domain.name}
+          color={domain.color}
+          position={domain.position}
           index={index}
+          onSelect={onSelect}
+          onHoverChange={onHoverChange}
         />
       ))}
 
@@ -85,145 +85,136 @@ function UniverseScene() {
   )
 }
 
-function downloadChainPdf(result) {
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-  const margin = 48
-  let y = margin
+const Universe = memo(function Universe({ onSelect, onHoverChange }) {
+  return (
+    <Canvas camera={CAMERA} dpr={DPR} gl={GL}>
+      <UniverseScene onSelect={onSelect} onHoverChange={onHoverChange} />
+    </Canvas>
+  )
+})
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(10)
-  doc.setTextColor(90, 110, 200)
-  doc.text('CAUSA — CAUSAL TRACE', margin, y)
-  y += 28
+function readDeepLink() {
+  const params = new URLSearchParams(window.location.search)
+  const q = params.get('q') || params.get('chain')
+  const domain = params.get('domain')
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(24)
-  doc.setTextColor(20, 20, 30)
-  doc.text(result.title, margin, y)
-  y += 18
+  if (!q && !domain) return null
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.setTextColor(120, 120, 130)
-  doc.text(result.year, margin, y)
-  y += 26
-
-  doc.setFontSize(11)
-  doc.setTextColor(60, 60, 70)
-  const descLines = doc.splitTextToSize(result.description, 500)
-  doc.text(descLines, margin, y)
-  y += descLines.length * 14 + 20
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
-  doc.setTextColor(20, 20, 30)
-  doc.text('THE CHAIN', margin, y)
-  y += 18
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(11)
-  result.chain.forEach((step, i) => {
-    doc.text(`${i + 1}. ${step}`, margin, y)
-    y += 16
-  })
-  y += 12
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
-  doc.text('WHAT LED TO IT', margin, y)
-  y += 16
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(11)
-  result.causes.forEach((cause) => {
-    doc.text(`•  ${cause}`, margin, y)
-    y += 15
-  })
-  y += 10
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
-  doc.text('WHAT CAME AFTER', margin, y)
-  y += 16
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(11)
-  result.effects.forEach((effect) => {
-    doc.text(`•  ${effect}`, margin, y)
-    y += 15
-  })
-
-  doc.save(`${result.title.replace(/\s+/g, '-').toLowerCase()}-causa.pdf`)
+  return {
+    q: q ? q.slice(0, 120) : '',
+    domain: getDomain(domain) ? domain : null,
+  }
 }
 
 export default function App() {
-  const [exploring, setExploring] = useState(false)
-  const [entering, setEntering] = useState(false)
-  const [query, setQuery] = useState('')
-  const [result, setResult] = useState(null)
-  const [noMatch, setNoMatch] = useState(false)
+  const [deepLink] = useState(readDeepLink)
 
-  const handleExplore = () => {
-    setEntering(true)
+  const [view, setView] = useState(deepLink ? 'explore' : 'universe')
+  const [scope, setScope] = useState(deepLink?.domain ?? null)
+  const [pendingQuery, setPendingQuery] = useState(deepLink?.q ?? '')
+  const [hoveredKey, setHoveredKey] = useState(null)
+  const [transition, setTransition] = useState(null)
+  const [aboutOpen, setAboutOpen] = useState(false)
 
-    window.setTimeout(() => {
-      setExploring(true)
-      setEntering(false)
-    }, 1400)
-  }
+  const timerRef = useRef(null)
 
-  const runSearch = (text) => {
-    const value = text ?? query
-    const knowledge = findKnowledge(value)
-    setResult(knowledge)
-    setNoMatch(!knowledge && value.trim() !== '')
-  }
-
-  const closeResult = () => {
-    setResult(null)
-  }
-
+  // browser history: back/forward move between universe and domain pages
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const chainParam = params.get('chain')
+    window.history.replaceState(
+      { view: deepLink ? 'explore' : 'universe', scope: deepLink?.domain ?? null },
+      '',
+      deepLink ? window.location.pathname : window.location.href,
+    )
 
-    if (chainParam) {
-      setExploring(true)
-      runSearch(decodeURIComponent(chainParam))
+    const onPop = (event) => {
+      const state = event.state
+
+      if (state?.view === 'explore') {
+        setScope(state.scope ?? null)
+        setView('explore')
+      } else {
+        setScope(null)
+        setView('universe')
+      }
+
+      setPendingQuery('')
+      setHoveredKey(null)
+    }
+
+    window.addEventListener('popstate', onPop)
+
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      if (timerRef.current) window.clearTimeout(timerRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const shareUrl = result
-    ? `${window.location.origin}${window.location.pathname}?chain=${encodeURIComponent(result.title)}`
-    : ''
+  useEffect(() => {
+    if (!aboutOpen) return undefined
+
+    const onKey = (event) => {
+      if (event.key === 'Escape') setAboutOpen(false)
+    }
+
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [aboutOpen])
+
+  const navigate = useCallback((nextView, nextScope = null, nextQuery = '') => {
+    window.history.pushState({ view: nextView, scope: nextScope }, '')
+    setScope(nextScope)
+    setPendingQuery(nextQuery)
+    setView(nextView)
+    setHoveredKey(null)
+  }, [])
+
+  const enter = useCallback(
+    (domainKey = null) => {
+      if (timerRef.current) return
+
+      const domain = getDomain(domainKey)
+
+      setTransition({
+        caption: domain ? 'ENTERING DOMAIN' : 'INITIALIZING',
+        label: domain ? domain.name : 'CAUSA',
+      })
+
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = null
+        navigate('explore', domainKey)
+        setTransition(null)
+      }, 1400)
+    },
+    [navigate],
+  )
+
+  const handleSelect = useCallback((name) => enter(name.toLowerCase()), [enter])
+
+  const handleHover = useCallback(
+    (name) => setHoveredKey(name ? name.toLowerCase() : null),
+    [],
+  )
+
+  const hoveredDomain = getDomain(hoveredKey)
 
   return (
-    <main className={`causa ${exploring ? 'is-exploring' : ''}`}>
-      {entering && (
+    <main className={`causa ${view === 'explore' ? 'is-exploring' : ''}`}>
+      {transition && (
         <div className="causa-transition">
           <div className="transition-core" />
           <div className="transition-ring ring-one" />
           <div className="transition-ring ring-two" />
           <div className="transition-text">
-            <span>INITIALIZING</span>
-            <strong>CAUSA</strong>
+            <span>{transition.caption}</span>
+            <strong>{transition.label}</strong>
           </div>
         </div>
       )}
 
-      {!exploring && (
+      {view === 'universe' && (
         <>
-          <Canvas
-            camera={{ position: [0, 0, 10], fov: 45 }}
-            dpr={[1, 1.8]}
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: 'high-performance',
-              toneMapping: ACESFilmicToneMapping,
-            }}
-          >
-            <UniverseScene />
-          </Canvas>
+          <Universe onSelect={handleSelect} onHoverChange={handleHover} />
 
           <div className="hud">
             <header className="topbar">
@@ -233,13 +224,32 @@ export default function App() {
               </div>
 
               <nav className="topnav">
-                <a href="#" className="active" onClick={(e) => e.preventDefault()}>
+                <a
+                  href="#"
+                  className="active"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    enter(null)
+                  }}
+                >
                   EXPLORE
                 </a>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    enter(null)
+                  }}
+                >
                   KNOWLEDGE GRAPH
                 </a>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+                <a
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    setAboutOpen(true)
+                  }}
+                >
                   ABOUT
                 </a>
               </nav>
@@ -250,7 +260,12 @@ export default function App() {
                   SYSTEM ONLINE
                 </div>
 
-                <button className="topbar-menu" aria-label="Menu">
+                <button
+                  type="button"
+                  className="topbar-menu"
+                  aria-label="About CAUSA"
+                  onClick={() => setAboutOpen(true)}
+                >
                   <span />
                   <span />
                   <span />
@@ -272,24 +287,26 @@ export default function App() {
               </h1>
 
               <p>
-                Explore the chain of ideas, discoveries and events that shaped
-                the world around us.
+                Explore the chain of ideas, discoveries and events that shaped the world
+                around us.
               </p>
 
-              <button className="enter-button" onClick={handleExplore}>
+              <button type="button" className="enter-button" onClick={() => enter(null)}>
                 <span>ENTER CAUSA</span>
                 <span className="enter-arrow">↗</span>
               </button>
 
               <div className="hero-meta">
                 <span>CAUSALITY ENGINE</span>
-                <span>01 / 06 DOMAINS</span>
+                <span>06 DOMAINS · CLICK A NODE TO ENTER</span>
               </div>
             </section>
 
             <div className="node-readout">
               <span>ACTIVE DOMAIN</span>
-              <strong>ALL KNOWLEDGE</strong>
+              <strong style={hoveredDomain ? { color: hoveredDomain.color } : undefined}>
+                {hoveredDomain ? hoveredDomain.name : 'ALL KNOWLEDGE'}
+              </strong>
             </div>
 
             <div className="left-data">
@@ -301,7 +318,7 @@ export default function App() {
             <div className="bottom-data">
               <div>
                 <span>MODE</span>
-                <strong>EXPLORATION</strong>
+                <strong>{hoveredDomain ? 'DOMAIN SELECT' : 'EXPLORATION'}</strong>
               </div>
               <div>
                 <span>DIMENSION</span>
@@ -321,173 +338,89 @@ export default function App() {
         </>
       )}
 
-      {exploring && (
-        <section className="exploration">
-          <header className="exploration-topbar">
-            <div className="brand">
-              <span className="brand-mark">C</span>
-              <span>CAUSA</span>
-            </div>
+      {view === 'explore' && (
+        <Exploration
+          key={scope ?? 'all'}
+          scope={scope}
+          initialQuery={pendingQuery}
+          onBack={() => navigate('universe')}
+          onSwitchScope={(nextScope, nextQuery = '') =>
+            navigate('explore', nextScope, nextQuery)
+          }
+        />
+      )}
 
-            <div className="system-status">
-              <span className="status-dot" />
-              CAUSAL ENGINE ONLINE
-            </div>
+      {aboutOpen && (
+        <div className="causal-overlay about-overlay">
+          <div className="causal-overlay-backdrop" onClick={() => setAboutOpen(false)} />
 
+          <div
+            className="causal-result about-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="About CAUSA"
+          >
             <button
-              className="return-button"
-              onClick={() => {
-                setExploring(false)
-                setResult(null)
-                setNoMatch(false)
-                setQuery('')
-              }}
+              type="button"
+              className="causal-close"
+              onClick={() => setAboutOpen(false)}
+              aria-label="Close about"
             >
-              ← UNIVERSE
+              ×
             </button>
-          </header>
 
-          <div className="exploration-content">
-            <div className="exploration-eyebrow">CAUSA / EXPLORATION ENGINE</div>
-
-            <h2>
-              WHAT DO YOU WANT
-              <br />
-              <span>TO UNDERSTAND?</span>
-            </h2>
-
-            <p className="exploration-description">
-              Don't search for an answer. Trace what caused it.
-            </p>
-
-            <div className="search-container">
-              <input
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value)
-                  setNoMatch(false)
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    runSearch()
-                  }
-                }}
-                placeholder='Try "telegraph", "electricity", or "printing press"'
-              />
-
-              <button onClick={() => runSearch()} aria-label="Search CAUSA">
-                ↗
-              </button>
-            </div>
-
-            {noMatch && (
-              <div className="search-empty">
-                No causal chain found for <strong>"{query}"</strong>. Try
-                telegraph, electricity, or printing press.
+            <div className="result-header">
+              <div>
+                <span>ABOUT</span>
+                <h3>CAUSA</h3>
               </div>
-            )}
-
-            <div className="domain-grid">
-              {NODES.map((node) => (
-                <button
-                  key={node.name}
-                  className="domain-card"
-                  style={{ '--domain-color': node.color }}
-                  onClick={() => {
-                    const value = node.name.toLowerCase()
-                    setQuery(value)
-                    runSearch(value)
-                  }}
-                >
-                  <span className="domain-dot" />
-                  {node.name}
-                  <span className="domain-arrow">↗</span>
-                </button>
-              ))}
             </div>
 
-            {result && (
-              <div className="causal-overlay">
-                <div className="causal-overlay-backdrop" onClick={closeResult} />
+            <div className="about-body">
+              <p>
+                CAUSA is a causal-knowledge search engine. Instead of returning a list of
+                links, it traces the chain of ideas, discoveries and events behind a topic
+                and shows what came next.
+              </p>
 
-                <div
-                  className="causal-result"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Causal trace"
-                >
-                  <button
-                    className="causal-close"
-                    onClick={closeResult}
-                    aria-label="Close causal trace"
-                  >
-                    ×
-                  </button>
-
-                  <div className="result-header">
-                    <div>
-                      <span>CAUSAL TRACE</span>
-                      <h3>{result.title}</h3>
-                    </div>
-                    <span>{result.year}</span>
-                  </div>
-
-                  <p>{result.description}</p>
-
-                  <CausalTrace result={result} />
-
-                  <div className="result-columns">
-                    <div>
-                      <span>WHAT LED TO IT</span>
-                      <ul>
-                        {result.causes.map((cause) => (
-                          <li key={cause}>{cause}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <span>WHAT CAME AFTER</span>
-                      <ul>
-                        {result.effects.map((effect) => (
-                          <li key={effect}>{effect}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="share-panel">
-                    <div className="share-info">
-                      <span>SHARE THIS TRACE</span>
-                      <p>
-                        Scan to open this exact causal chain on another
-                        device, or download it as a PDF right now.
-                      </p>
-                      <button
-                        type="button"
-                        className="pdf-button"
-                        onClick={() => downloadChainPdf(result)}
-                      >
-                        DOWNLOAD PDF ⬇
-                      </button>
-                    </div>
-
-                    <div className="qr-wrap">
-                      <QRCode
-                        value={shareUrl}
-                        size={92}
-                        bgColor="transparent"
-                        fgColor="#e8edff"
-                      />
-                    </div>
-                  </div>
-
-                  <CausalityGraph result={result} />
+              <div className="about-steps">
+                <div>
+                  <span>01</span>
+                  <strong>Pick a domain</strong>
+                  <p>
+                    Click a node in the universe: Science, Philosophy, History, Technology,
+                    Mathematics or Art.
+                  </p>
+                </div>
+                <div>
+                  <span>02</span>
+                  <strong>Search anything</strong>
+                  <p>
+                    The topic is traced through the lens of that domain, so "printing press"
+                    reads differently in Art than in History.
+                  </p>
+                </div>
+                <div>
+                  <span>03</span>
+                  <strong>Walk the chain</strong>
+                  <p>
+                    Step through each cause and consequence, then share it as a PDF or QR
+                    code.
+                  </p>
                 </div>
               </div>
-            )}
+
+              <div className="about-stack">
+                REACT · VITE · THREE.JS / R3F · OPENROUTER AI (SERVERLESS) · JSPDF
+              </div>
+
+              <p className="about-note">
+                Curated traces are hand-written. Everything else is generated by an AI model
+                and may contain mistakes, so verify important facts.
+              </p>
+            </div>
           </div>
-        </section>
+        </div>
       )}
     </main>
   )

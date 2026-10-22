@@ -1,0 +1,303 @@
+const node = (type, description, causes = [], effects = []) => ({
+    type,
+    description,
+    causes,
+    effects,
+  })
+  
+  export const relationshipData = {
+    'Electrical Experiments': node(
+      'ORIGIN',
+      'Early experiments with electricity created the scientific foundation for electrical communication.',
+      [],
+      ['Telegraph'],
+    ),
+    'Morse Code': node(
+      'ENABLER',
+      'A standardized system of dots and dashes made it possible to encode language into electrical signals.',
+      ['Electrical Experiments'],
+      ['Telegraph'],
+    ),
+    'Wired Electrical Networks': node(
+      'INFRASTRUCTURE',
+      'Wired electrical networks provided the physical infrastructure required to transmit coded messages.',
+      ['Electrical Experiments'],
+      ['Telegraph'],
+    ),
+    Telegraph: node(
+      'BREAKTHROUGH',
+      'The telegraph transformed communication by allowing coded messages to travel rapidly across long distances.',
+      ['Electrical Experiments', 'Morse Code', 'Wired Electrical Networks'],
+      ['Telephone', 'Radio'],
+    ),
+    Telephone: node(
+      'BREAKTHROUGH',
+      'The telephone extended electrical communication from coded signals to transmitted human speech.',
+      ['Telegraph'],
+      ['Radio'],
+    ),
+    Radio: node(
+      'BREAKTHROUGH',
+      'Radio enabled information to travel wirelessly, opening the path toward modern electronic communication.',
+      ['Telegraph', 'Telephone'],
+      ['Transistor'],
+    ),
+    Transistor: node(
+      'FOUNDATION',
+      'The transistor made electronic circuits smaller, faster, and more reliable.',
+      ['Radio', 'Solid-State Physics'],
+      ['Integrated Circuit'],
+    ),
+    'Integrated Circuit': node(
+      'FOUNDATION',
+      'Integrated circuits placed many electronic components onto a single piece of semiconductor material.',
+      ['Transistor'],
+      ['Microprocessor'],
+    ),
+    Microprocessor: node(
+      'FOUNDATION',
+      'The microprocessor placed central computing logic onto a compact chip.',
+      ['Integrated Circuit'],
+      ['Personal Computer', 'Smartphone'],
+    ),
+    'Personal Computer': node(
+      'TRANSFORMATION',
+      'Personal computers brought programmable computing power from institutions into homes and workplaces.',
+      ['Microprocessor'],
+      ['Internet'],
+    ),
+    Internet: node(
+      'NETWORK',
+      'The Internet connected independent computer networks into a global information system.',
+      ['Personal Computer'],
+      ['Smartphone'],
+    ),
+    Smartphone: node(
+      'CURRENT',
+      'The smartphone combines computing, communication, sensors, and global connectivity into one portable device.',
+      ['Internet', 'Microprocessor'],
+      [],
+    ),
+  
+    'Static Electricity': node(
+      'ORIGIN',
+      'Early observations of static charge gave the first clues that electricity was a distinct, controllable force.',
+      [],
+      ['Electric Current'],
+    ),
+    'Electric Current': node(
+      'ENABLER',
+      'Understanding the controlled flow of charge made practical electrical devices possible.',
+      ['Static Electricity'],
+      ['Electromagnetism'],
+    ),
+    Electromagnetism: node(
+      'FOUNDATION',
+      'Discovering the link between electricity and magnetism unlocked motors and long-distance signaling.',
+      ['Electric Current'],
+      ['Telegraph'],
+    ),
+    'Electric Power': node(
+      'INFRASTRUCTURE',
+      'Large-scale generation and distribution of electricity brought power to homes and industry alike.',
+      ['Telegraph'],
+      ['Electronics'],
+    ),
+    Electronics: node(
+      'FOUNDATION',
+      'Circuits built to precisely control electron flow gave rise to radio, television, and computing.',
+      ['Electric Power'],
+      ['Computers'],
+    ),
+    Computers: node(
+      'TRANSFORMATION',
+      'Programmable electronic machines could process information at a scale no prior technology could match.',
+      ['Electronics'],
+      ['Internet'],
+    ),
+  
+    Paper: node(
+      'ORIGIN',
+      'An inexpensive, portable writing material made mass reproduction of text feasible for the first time.',
+      [],
+      ['Movable Type'],
+    ),
+    'Movable Type': node(
+      'ENABLER',
+      'Reusable individual characters let printers assemble and reset pages far faster than hand-copying.',
+      ['Paper'],
+      ['Printing Press'],
+    ),
+    'Printing Press': node(
+      'BREAKTHROUGH',
+      'Mechanized reproduction of text dramatically increased the speed and scale at which ideas could spread.',
+      ['Paper', 'Movable Type'],
+      ['Mass Literacy', 'Scientific Revolution'],
+    ),
+    'Mass Literacy': node(
+      'TRANSFORMATION',
+      'A widespread ability to read turned printed material into a tool for education and civic life.',
+      ['Printing Press'],
+      ['Modern Knowledge'],
+    ),
+    'Scientific Revolution': node(
+      'BREAKTHROUGH',
+      'A shift toward observation and experimentation replaced tradition as the basis of knowledge.',
+      ['Printing Press', 'Renaissance'],
+      ['Enlightenment', 'Scientific Method'],
+    ),
+    Enlightenment: node(
+      'BREAKTHROUGH',
+      'A philosophical movement that placed reason, individual rights, and skepticism of authority at the center of human thought.',
+      ['Scientific Revolution', 'Rationalism'],
+      ['Natural Rights', 'Modern Human Rights'],
+    ),
+    'Modern Knowledge': node(
+      'CURRENT',
+      "Today's vast, widely accessible base of recorded human understanding.",
+      ['Mass Literacy'],
+      [],
+    ),
+  
+    Renaissance: node(
+      'ORIGIN',
+      'A revival of classical learning and inquiry set the stage for scientific and philosophical thinking.',
+      [],
+      ['Scientific Revolution'],
+    ),
+    'Scientific Method': node(
+      'FOUNDATION',
+      'A systematic approach of observation, hypothesis, and testing became the standard for reliable knowledge.',
+      ['Scientific Revolution', 'Rationalism'],
+      ['Modern Science'],
+    ),
+    'Modern Science': node(
+      'FOUNDATION',
+      'Organized scientific disciplines built on testable, repeatable methods.',
+      ['Scientific Method'],
+      ['Engineering'],
+    ),
+    Engineering: node(
+      'TRANSFORMATION',
+      'Applying scientific principles to design and build practical systems and structures.',
+      ['Modern Science'],
+      ['Modern Technology'],
+    ),
+    'Modern Technology': node(
+      'CURRENT',
+      "Today's technological tools and infrastructure, built on centuries of engineering practice.",
+      ['Engineering'],
+      [],
+    ),
+  
+    Rationalism: node(
+      'ORIGIN',
+      'The view that reason, not authority or tradition, is the primary source of reliable knowledge.',
+      [],
+      ['Scientific Method', 'Enlightenment'],
+    ),
+    'Natural Rights': node(
+      'FOUNDATION',
+      'The idea that individuals possess inherent rights independent of any government.',
+      ['Enlightenment'],
+      ['Social Contract Theory'],
+    ),
+    'Social Contract Theory': node(
+      'FOUNDATION',
+      'The idea that legitimate government derives from an agreement among the governed.',
+      ['Natural Rights'],
+      ['Democracy'],
+    ),
+    Democracy: node(
+      'TRANSFORMATION',
+      'Governance by the consent and participation of the people.',
+      ['Social Contract Theory'],
+      ['Modern Human Rights'],
+    ),
+    'Modern Human Rights': node(
+      'CURRENT',
+      "Today's legal and moral frameworks protecting individual freedoms worldwide.",
+      ['Democracy', 'Enlightenment'],
+      [],
+    ),
+  
+    'Ancient Geometry': node(
+      'ORIGIN',
+      'Early systematic study of shapes, space, and measurement.',
+      [],
+      ['Algebra'],
+    ),
+    Algebra: node(
+      'ENABLER',
+      'Symbolic methods for solving equations and expressing general mathematical relationships.',
+      ['Ancient Geometry'],
+      ['Analytic Geometry'],
+    ),
+    'Analytic Geometry': node(
+      'ENABLER',
+      'Representing geometric shapes using algebraic equations and coordinate systems.',
+      ['Algebra'],
+      ['Calculus'],
+    ),
+    Calculus: node(
+      'BREAKTHROUGH',
+      'Calculus gave mathematics a language for describing continuous change, unlocking centuries of scientific and engineering progress.',
+      ['Analytic Geometry'],
+      ['Newtonian Physics'],
+    ),
+    'Newtonian Physics': node(
+      'BREAKTHROUGH',
+      'Laws of motion and gravitation formalized using the tools of calculus.',
+      ['Calculus'],
+      ['Modern Engineering'],
+    ),
+    'Modern Engineering': node(
+      'TRANSFORMATION',
+      'Applying precise mathematical models to design machines, structures, and systems.',
+      ['Newtonian Physics'],
+      ['Computer Science'],
+    ),
+    'Computer Science': node(
+      'CURRENT',
+      'The study of computation, algorithms, and information processing.',
+      ['Modern Engineering'],
+      [],
+    ),
+  
+    Photography: node(
+      'ORIGIN',
+      'The ability to capture a scene exactly as it appeared challenged painters to find a new purpose.',
+      [],
+      ['Naturalism'],
+    ),
+    Naturalism: node(
+      'ENABLER',
+      'An art movement emphasizing accurate, unidealized depiction of everyday life.',
+      ['Photography'],
+      ['Impressionism'],
+    ),
+    Impressionism: node(
+      'BREAKTHROUGH',
+      'Impressionism broke from rigid academic painting, capturing light and fleeting moments instead of rigid detail.',
+      ['Photography', 'Naturalism'],
+      ['Post-Impressionism'],
+    ),
+    'Post-Impressionism': node(
+      'TRANSFORMATION',
+      'Artists pushed beyond naturalistic color and light toward personal expression and structure.',
+      ['Impressionism'],
+      ['Modern Art'],
+    ),
+    'Modern Art': node(
+      'TRANSFORMATION',
+      'A broad rejection of traditional technique in favor of experimentation and new forms.',
+      ['Post-Impressionism'],
+      ['Abstract Art'],
+    ),
+    'Abstract Art': node(
+      'CURRENT',
+      'Art that represents ideas and emotion without depicting recognizable subjects.',
+      ['Modern Art'],
+      [],
+    ),
+  }

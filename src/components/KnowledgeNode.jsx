@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Float, Html } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 
@@ -41,17 +41,31 @@ const ICONS = {
   ),
 }
 
-export default function KnowledgeNode({ name, color, position, index = 0 }) {
+export default function KnowledgeNode({
+  name,
+  color,
+  position,
+  index = 0,
+  onSelect,
+  onHoverChange,
+}) {
   const groupRef = useRef()
   const orbRef = useRef()
   const [hovered, setHovered] = useState(false)
+
+  // never leave the pointer cursor behind when the scene unmounts
+  useEffect(
+    () => () => {
+      document.body.style.cursor = 'default'
+    },
+    [],
+  )
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime()
 
     if (groupRef.current) {
-      groupRef.current.position.y =
-        position[1] + Math.sin(time * 0.7 + index) * 0.08
+      groupRef.current.position.y = position[1] + Math.sin(time * 0.7 + index) * 0.08
     }
 
     if (orbRef.current) {
@@ -59,6 +73,18 @@ export default function KnowledgeNode({ name, color, position, index = 0 }) {
       orbRef.current.rotation.x = Math.sin(time * 0.5 + index) * 0.15
     }
   })
+
+  const hoverOn = () => {
+    setHovered(true)
+    document.body.style.cursor = 'pointer'
+    onHoverChange?.(name)
+  }
+
+  const hoverOff = () => {
+    setHovered(false)
+    document.body.style.cursor = 'default'
+    onHoverChange?.(null)
+  }
 
   return (
     <Float speed={1.4} rotationIntensity={0.12} floatIntensity={0.25}>
@@ -68,19 +94,7 @@ export default function KnowledgeNode({ name, color, position, index = 0 }) {
           <meshBasicMaterial color={color} transparent opacity={hovered ? 0.12 : 0.055} />
         </mesh>
 
-        <mesh
-          ref={orbRef}
-          scale={hovered ? 1.12 : 1}
-          onPointerOver={(event) => {
-            event.stopPropagation()
-            setHovered(true)
-            document.body.style.cursor = 'pointer'
-          }}
-          onPointerOut={() => {
-            setHovered(false)
-            document.body.style.cursor = 'default'
-          }}
-        >
+        <mesh ref={orbRef} scale={hovered ? 1.12 : 1}>
           <sphereGeometry args={[0.32, 32, 32]} />
           <meshStandardMaterial
             color={color}
@@ -96,6 +110,22 @@ export default function KnowledgeNode({ name, color, position, index = 0 }) {
           <meshBasicMaterial color={color} transparent opacity={hovered ? 0.5 : 0.25} wireframe />
         </mesh>
 
+        {/* larger invisible hit area so nodes are easy to click */}
+        <mesh
+          onClick={(event) => {
+            event.stopPropagation()
+            onSelect?.(name)
+          }}
+          onPointerOver={(event) => {
+            event.stopPropagation()
+            hoverOn()
+          }}
+          onPointerOut={hoverOff}
+        >
+          <sphereGeometry args={[0.62, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+
         <pointLight color={color} intensity={hovered ? 3.2 : 1.4} distance={hovered ? 5 : 3.5} />
 
         <Html center distanceFactor={9} position={[0, 0, 0]} style={{ pointerEvents: 'none' }}>
@@ -103,26 +133,21 @@ export default function KnowledgeNode({ name, color, position, index = 0 }) {
             className={`node-icon ${hovered ? 'node-icon-active' : ''}`}
             style={{ '--node-color': color }}
           >
-            {name === 'MATHEMATICS' ? (
-              <span className="node-icon-glyph">π</span>
-            ) : (
-              ICONS[name]
-            )}
+            {name === 'MATHEMATICS' ? <span className="node-icon-glyph">π</span> : ICONS[name]}
           </div>
         </Html>
 
-        <Html
-          center
-          distanceFactor={9}
-          position={[0, -0.72, 0]}
-          style={{ pointerEvents: 'none' }}
-        >
+        <Html center distanceFactor={9} position={[0, -0.72, 0]} style={{ pointerEvents: 'none' }}>
           <div
             className={`knowledge-node-label ${hovered ? 'knowledge-node-label-active' : ''}`}
             style={{ '--node-color': color }}
+            onClick={() => onSelect?.(name)}
+            onMouseEnter={hoverOn}
+            onMouseLeave={hoverOff}
           >
             <span className="knowledge-node-line" />
             <span className="knowledge-node-name">{name}</span>
+            {hovered && <span className="knowledge-node-hint">OPEN ↗</span>}
           </div>
         </Html>
       </group>

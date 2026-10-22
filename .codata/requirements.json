@@ -1,0 +1,57 @@
+{
+  "requirements": [
+    {
+      "id": "browse-domains",
+      "statement": "Visitors can browse knowledge by domain (science, philosophy, history, technology, mathematics, art) and list the causal chains in that domain.",
+      "capability": null,
+      "components": [],
+      "usage": null,
+      "status": "proposed",
+      "verifiedBy": null,
+      "owner": "agent"
+    },
+    {
+      "id": "search-chains",
+      "statement": "Visitors can search for an idea, invention, or event and see its causal chain: title, year, domain, description, what led to it, what came after, and the ordered sequence of nodes.",
+      "capability": null,
+      "components": [],
+      "usage": null,
+      "status": "proposed",
+      "verifiedBy": null,
+      "owner": "agent"
+    },
+    {
+      "id": "store-knowledge",
+      "statement": "Causal knowledge lives in a backend so the app is not limited to a handful of hardcoded local examples and can grow over time.",
+      "capability": null,
+      "components": [],
+      "usage": null,
+      "status": "proposed",
+      "verifiedBy": null,
+      "owner": "agent"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "browse-domains",
+      "statement": "Visitors can browse knowledge by domain (science, philosophy, history, technology, mathematics, art) and list the causal chains in that domain.",
+      "owner": "agent",
+      "status": "proposed",
+      "hint": "No backend component satisfies this yet."
+    },
+    {
+      "id": "search-chains",
+      "statement": "Visitors can search for an idea, invention, or event and see its causal chain: title, year, domain, description, what led to it, what came after, and the ordered sequence of nodes.",
+      "owner": "agent",
+      "status": "proposed",
+      "hint": "No backend component satisfies this yet."
+    },
+    {
+      "id": "store-knowledge",
+      "statement": "Causal knowledge lives in a backend so the app is not limited to a handful of hardcoded local examples and can grow over time.",
+      "owner": "agent",
+      "status": "proposed",
+      "hint": "No backend component satisfies this yet."
+    }
+  ]
+}
