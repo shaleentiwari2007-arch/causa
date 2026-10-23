@@ -144,6 +144,28 @@ export default function Exploration({
   const [stepIndex, setStepIndex] = useState(0)
 
   const controllerRef = useRef(null)
+  const rootRef = useRef(null)
+  const frameRef = useRef(0)
+
+  // spotlight follows the pointer (CSS variables, no re-render)
+  const handleMouseMove = (event) => {
+    if (frameRef.current) return
+
+    const { clientX, clientY } = event
+
+    frameRef.current = window.requestAnimationFrame(() => {
+      frameRef.current = 0
+      rootRef.current?.style.setProperty('--mx', `${clientX}px`)
+      rootRef.current?.style.setProperty('--my', `${clientY}px`)
+    })
+  }
+
+  useEffect(
+    () => () => {
+      if (frameRef.current) window.cancelAnimationFrame(frameRef.current)
+    },
+    [],
+  )
 
   const search = async (text) => {
     const value = (text ?? query).trim()
@@ -219,6 +241,10 @@ export default function Exploration({
   const suggestions = domain ? domain.suggestions : ALL_SUGGESTIONS
   const resultDomain = result ? getDomain(result.domain) : null
 
+  const curatedCount = domain
+    ? chainsForDomain(scope).length
+    : DOMAINS.reduce((total, item) => total + chainsForDomain(item.key).length, 0)
+
   const shareUrl = result
     ? `${window.location.origin}${window.location.pathname}?${
         scope ? `domain=${scope}&` : ''
@@ -227,10 +253,14 @@ export default function Exploration({
 
   return (
     <section
+      ref={rootRef}
       className="exploration"
+      onMouseMove={handleMouseMove}
       style={{ '--domain-color': domain?.color || '#4d8cff' }}
     >
+      <div className="exploration-stars" />
       <div className="exploration-aurora" />
+      <div className="exploration-spotlight" />
 
       <header className="exploration-topbar">
         <div className="brand">
@@ -249,6 +279,12 @@ export default function Exploration({
       </header>
 
       <div className="exploration-content">
+        <div className="domain-orb" aria-hidden="true">
+          <span className="domain-orb-ring" />
+          <span className="domain-orb-ring r2" />
+          <span className="domain-orb-core" />
+        </div>
+
         <div className="exploration-eyebrow">
           CAUSA / {domain ? domain.name : 'EXPLORATION ENGINE'}
         </div>
@@ -274,6 +310,25 @@ export default function Exploration({
             ? `${domain.tagline} Search anything — CAUSA traces it through the lens of ${domain.name.toLowerCase()} only.`
             : "Don't search for an answer. Trace what caused it."}
         </p>
+
+        <div className="domain-stats">
+          <div>
+            <span>LENS</span>
+            <strong className="accent">{domain ? domain.name : 'ALL DOMAINS'}</strong>
+          </div>
+          <div>
+            <span>CURATED TRACES</span>
+            <strong>{String(curatedCount).padStart(2, '0')}</strong>
+          </div>
+          <div>
+            <span>AI TRACES</span>
+            <strong>ON DEMAND</strong>
+          </div>
+          <div>
+            <span>STATUS</span>
+            <strong>ONLINE</strong>
+          </div>
+        </div>
 
         <div className="scope-switcher" aria-label="Knowledge domain">
           <button
@@ -384,6 +439,17 @@ export default function Exploration({
                   <span>{chain.year}</span>
                   <strong>{chain.title}</strong>
                   <p>{chain.description}</p>
+
+                  <div className="featured-path">
+                    {chain.chain.slice(0, 4).map((step) => (
+                      <i key={step}>{step}</i>
+                    ))}
+                    {chain.chain.length > 4 && (
+                      <i className="more">+{chain.chain.length - 4}</i>
+                    )}
+                  </div>
+
+                  <em className="featured-open">TRACE IT ↗</em>
                 </button>
               ))}
             </div>
@@ -392,18 +458,23 @@ export default function Exploration({
           <div className="featured">
             <span className="featured-label">ENTER A DOMAIN</span>
 
-            <div className="domain-grid">
+            <div className="domain-grid tile-grid">
               {DOMAINS.map((item) => (
                 <button
                   key={item.key}
                   type="button"
-                  className="domain-card"
+                  className="domain-tile"
                   style={{ '--domain-color': item.color }}
                   onClick={() => onSwitchScope(item.key)}
                 >
+                  <span className="domain-tile-glow" />
                   <span className="domain-dot" />
-                  {item.name}
-                  <span className="domain-arrow">↗</span>
+                  <strong>{item.name}</strong>
+                  <p>{item.tagline}</p>
+                  <em>
+                    {String(chainsForDomain(item.key).length).padStart(2, '0')} CURATED ·
+                    AI ON DEMAND ↗
+                  </em>
                 </button>
               ))}
             </div>

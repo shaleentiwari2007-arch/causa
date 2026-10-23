@@ -2567,3 +2567,400 @@ canvas { position: absolute !important; inset: 0; }
 @media (prefers-reduced-motion: reduce) {
   .trace-loading-orbit span { animation: none; }
 }
+/* =========================================
+   LONG NODE NAMES (AI traces): wrap inside the column
+========================================= */
+
+.causal-node { min-width: 0; }
+
+.causal-node-label {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 4px;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  text-wrap: balance;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+/* equal columns no matter how long the names are (desktop only; mobile keeps its scroll layout) */
+@media (min-width: 761px) {
+  .causal-node-row {
+    grid-template-columns: repeat(var(--causal-node-count, 1), minmax(0, 1fr));
+  }
+}
+
+/* same fix for the node names in the graph below */
+.graph-node-label {
+  width: 94px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+/* =========================================
+   DOMAIN PAGES: VISUAL UPGRADE
+========================================= */
+
+/* the root inherited text-align:center, which mis-aligned headings and
+   paragraphs on every screen (home page included) */
+   .causa,
+   .exploration { text-align: left; }
+   
+   /* ---------- background layers ---------- */
+   
+   .exploration-stars {
+     position: fixed;
+     inset: 0;
+     z-index: 0;
+     overflow: hidden;
+     pointer-events: none;
+   }
+   
+   .exploration-stars::before,
+   .exploration-stars::after {
+     content: '';
+     position: absolute;
+     top: -340px;
+     left: -520px;
+     right: 0;
+     bottom: 0;
+     will-change: transform;
+   }
+   
+   .exploration-stars::before {
+     opacity: 0.5;
+     background-image:
+       radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+       radial-gradient(1px 1px at 90px 120px, #cfe0ff, transparent),
+       radial-gradient(1.4px 1.4px at 160px 60px, #fff, transparent),
+       radial-gradient(1px 1px at 230px 170px, #b9d0ff, transparent),
+       radial-gradient(1px 1px at 300px 90px, #fff, transparent);
+     background-size: 320px 200px;
+     animation: starsNear 140s linear infinite;
+   }
+   
+   .exploration-stars::after {
+     opacity: 0.7;
+     background-image:
+       radial-gradient(1.6px 1.6px at 60px 80px, #fff, transparent),
+       radial-gradient(1px 1px at 210px 260px, #d6e4ff, transparent),
+       radial-gradient(1.2px 1.2px at 380px 140px, #fff, transparent),
+       radial-gradient(1px 1px at 450px 300px, #bcd2ff, transparent);
+     background-size: 520px 340px;
+     animation: starsFar 240s linear infinite;
+   }
+   
+   @keyframes starsNear { to { transform: translate3d(320px, 200px, 0); } }
+   @keyframes starsFar { to { transform: translate3d(520px, 340px, 0); } }
+   
+   .exploration-spotlight {
+     position: fixed;
+     inset: 0;
+     z-index: 1;
+     pointer-events: none;
+     background: radial-gradient(
+       520px circle at var(--mx, 62%) var(--my, 22%),
+       color-mix(in srgb, var(--domain-color) 13%, transparent),
+       transparent 62%
+     );
+   }
+   
+   /* ---------- heading + orb ---------- */
+   
+   .exploration-content h2 {
+     font-size: clamp(44px, 5.8vw, 88px);
+   }
+   
+   .domain-orb {
+     position: absolute;
+     top: 64px;
+     right: 0;
+     width: clamp(260px, 26vw, 380px);
+     aspect-ratio: 1;
+     perspective: 900px;
+     pointer-events: none;
+   }
+   
+   .domain-orb-core {
+     position: absolute;
+     inset: 22%;
+     border-radius: 50%;
+     background:
+       radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), transparent 28%),
+       radial-gradient(
+         circle at 50% 50%,
+         color-mix(in srgb, var(--domain-color) 80%, #fff) 0%,
+         var(--domain-color) 40%,
+         color-mix(in srgb, var(--domain-color) 28%, #02030a) 78%,
+         #02030a 100%
+       );
+     box-shadow:
+       0 0 90px color-mix(in srgb, var(--domain-color) 45%, transparent),
+       inset -18px -18px 40px rgba(0, 0, 0, 0.55);
+     animation: orbFloat 7s ease-in-out infinite;
+   }
+   
+   .domain-orb-ring {
+     --tilt: 68deg;
+     position: absolute;
+     inset: 6%;
+     border-radius: 50%;
+     border: 1px solid color-mix(in srgb, var(--domain-color) 55%, transparent);
+     box-shadow: 0 0 24px color-mix(in srgb, var(--domain-color) 18%, transparent);
+     transform: rotateX(var(--tilt)) rotateZ(0deg);
+     animation: ringSpin 18s linear infinite;
+   }
+   
+   .domain-orb-ring::after {
+     content: '';
+     position: absolute;
+     top: -4px;
+     left: 50%;
+     width: 8px;
+     height: 8px;
+     margin-left: -4px;
+     border-radius: 50%;
+     background: var(--domain-color);
+     box-shadow: 0 0 14px var(--domain-color), 0 0 30px var(--domain-color);
+   }
+   
+   .domain-orb-ring.r2 {
+     --tilt: 74deg;
+     inset: -6%;
+     border-style: dashed;
+     border-color: color-mix(in srgb, var(--domain-color) 32%, transparent);
+     box-shadow: none;
+     animation-duration: 30s;
+     animation-direction: reverse;
+   }
+   
+   .domain-orb-ring.r2::after { display: none; }
+   
+   @keyframes orbFloat {
+     0%, 100% { transform: translateY(0); }
+     50% { transform: translateY(-10px); }
+   }
+   
+   @keyframes ringSpin {
+     from { transform: rotateX(var(--tilt)) rotateZ(0deg); }
+     to { transform: rotateX(var(--tilt)) rotateZ(360deg); }
+   }
+   
+   /* ---------- status row ---------- */
+   
+   .domain-stats {
+     display: flex;
+     flex-wrap: wrap;
+     margin: -12px 0 34px;
+   }
+   
+   .domain-stats > div {
+     display: flex;
+     flex-direction: column;
+     gap: 6px;
+     margin-right: 28px;
+     padding-right: 28px;
+     border-right: 1px solid rgba(120, 150, 220, 0.14);
+     font-family: "Space Mono", monospace;
+   }
+   
+   .domain-stats > div:last-child { margin-right: 0; padding-right: 0; border-right: 0; }
+   
+   .domain-stats span {
+     font-size: 7px;
+     letter-spacing: 0.22em;
+     color: rgba(140, 165, 210, 0.45);
+   }
+   
+   .domain-stats strong {
+     font-size: 11px;
+     font-weight: 400;
+     letter-spacing: 0.14em;
+     color: rgba(225, 235, 255, 0.85);
+   }
+   
+   .domain-stats strong.accent {
+     color: var(--domain-color);
+     text-shadow: 0 0 14px color-mix(in srgb, var(--domain-color) 50%, transparent);
+   }
+   
+   /* ---------- curated cards ---------- */
+   
+   .featured-card { position: relative; overflow: hidden; }
+   
+   .featured-card::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     height: 2px;
+     background: linear-gradient(90deg, var(--domain-color), transparent 70%);
+   }
+   
+   .featured-card:hover {
+     box-shadow: 0 24px 60px color-mix(in srgb, var(--domain-color) 14%, transparent);
+   }
+   
+   .featured-path { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+   
+   .featured-path i {
+     padding: 4px 9px;
+     border: 1px solid color-mix(in srgb, var(--domain-color) 28%, transparent);
+     border-radius: 999px;
+     font-family: "Space Mono", monospace;
+     font-size: 8px;
+     font-style: normal;
+     letter-spacing: 0.06em;
+     color: rgba(215, 226, 250, 0.7);
+   }
+   
+   .featured-path i.more { border-style: dashed; color: var(--domain-color); }
+   
+   .featured-open {
+     display: block;
+     margin-top: 18px;
+     font-family: "Space Mono", monospace;
+     font-size: 8px;
+     font-style: normal;
+     letter-spacing: 0.18em;
+     color: var(--domain-color);
+   }
+   
+   /* ---------- domain tiles (all-knowledge page) ---------- */
+   
+   .domain-grid.tile-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+   
+   .domain-tile {
+     position: relative;
+     overflow: hidden;
+     min-height: 160px;
+     padding: 24px;
+     border: 1px solid color-mix(in srgb, var(--domain-color) 18%, rgba(140, 165, 215, 0.1));
+     background: linear-gradient(
+       145deg,
+       color-mix(in srgb, var(--domain-color) 7%, rgba(15, 23, 48, 0.7)),
+       rgba(4, 8, 20, 0.7)
+     );
+     color: inherit;
+     text-align: left;
+     cursor: pointer;
+     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+   }
+   
+   .domain-tile::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     height: 2px;
+     background: linear-gradient(90deg, var(--domain-color), transparent 70%);
+     opacity: 0.7;
+   }
+   
+   .domain-tile-glow {
+     position: absolute;
+     right: -60px;
+     bottom: -70px;
+     width: 180px;
+     height: 180px;
+     border-radius: 50%;
+     background: radial-gradient(
+       circle,
+       color-mix(in srgb, var(--domain-color) 35%, transparent),
+       transparent 70%
+     );
+     opacity: 0.7;
+     transition: transform 0.4s ease, opacity 0.4s ease;
+   }
+   
+   .domain-tile:hover {
+     transform: translateY(-4px);
+     border-color: color-mix(in srgb, var(--domain-color) 60%, transparent);
+     box-shadow: 0 24px 60px color-mix(in srgb, var(--domain-color) 16%, transparent);
+   }
+   
+   .domain-tile:hover .domain-tile-glow { transform: scale(1.3); opacity: 1; }
+   
+   .domain-tile strong {
+     display: block;
+     margin: 14px 0 8px;
+     font-size: 20px;
+     font-weight: 500;
+     letter-spacing: 0.06em;
+   }
+   
+   .domain-tile p {
+     max-width: 260px;
+     margin: 0 0 18px;
+     font-size: 12px;
+     line-height: 1.6;
+     color: rgba(200, 212, 240, 0.55);
+   }
+   
+   .domain-tile em {
+     font-family: "Space Mono", monospace;
+     font-size: 8px;
+     font-style: normal;
+     letter-spacing: 0.16em;
+     color: var(--domain-color);
+   }
+   
+   /* ---------- entrance animation ---------- */
+   
+   @keyframes riseIn {
+     from { opacity: 0; transform: translateY(18px); }
+     to { opacity: 1; transform: translateY(0); }
+   }
+   
+   /* fill-mode backwards: no lingering transform, so the fixed result modal still works */
+   .exploration-content > :not(.domain-orb):not(.causal-overlay) {
+     animation-name: riseIn;
+     animation-duration: 0.7s;
+     animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+     animation-fill-mode: backwards;
+   }
+   
+   .exploration-content > :nth-child(3) { animation-delay: 70ms; }
+   .exploration-content > :nth-child(4) { animation-delay: 140ms; }
+   .exploration-content > :nth-child(5) { animation-delay: 210ms; }
+   .exploration-content > :nth-child(6) { animation-delay: 280ms; }
+   .exploration-content > :nth-child(7) { animation-delay: 350ms; }
+   .exploration-content > :nth-child(8) { animation-delay: 420ms; }
+   .exploration-content > :nth-child(9) { animation-delay: 490ms; }
+   .exploration-content > :nth-child(10) { animation-delay: 560ms; }
+   
+   /* ---------- responsive + reduced motion ---------- */
+   
+   @media (max-width: 1100px) {
+     .domain-orb { display: none; }
+   }
+   
+   @media (max-width: 900px) {
+     .domain-grid.tile-grid { grid-template-columns: repeat(2, 1fr); }
+   }
+   
+   @media (max-width: 600px) {
+     .domain-grid.tile-grid { grid-template-columns: 1fr; }
+     .domain-stats > div { margin-right: 18px; padding-right: 18px; }
+   }
+   
+   @media (prefers-reduced-motion: reduce) {
+     .exploration-stars::before,
+     .exploration-stars::after,
+     .domain-orb-ring,
+     .domain-orb-core { animation: none; }
+   
+     .exploration-content > * { animation: none; }
+   }
